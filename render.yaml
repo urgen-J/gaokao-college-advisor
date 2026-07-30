@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: gaokao-college-advisor
+    runtime: node
+    plan: free
+    region: oregon          # 海外节点；免费版会休眠，付费可常驻
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: CODEBUDDY_API_KEY        # DeepSeek 密钥（必填），去 deepseek.com 申请
+        sync: false
+      - key: CODEBUDDY_BASE_URL       # 默认 https://api.deepseek.com，一般不用改
+        value: "https://api.deepseek.com"
+      - key: QWEN_API_KEY             # 通义千问密钥（开「联网搜索」才需要），去 dashscope.com 申请
+        sync: false
+      - key: LOGIN_USERNAME           # 后台管理账号，建议改成自己的
+        sync: false
+      - key: LOGIN_PASSWORD           # 后台管理密码，务必改掉默认的 admin123
+        sync: false

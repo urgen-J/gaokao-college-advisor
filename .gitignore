@@ -1,0 +1,21 @@
+# 依赖（体积巨大，无需上传，平台会自动 npm install 重新生成）
+node_modules/
+
+# 构建产物（可由源码重新打包生成）
+dist/
+
+# 本地数据（对话记录，含用户隐私）
+data/
+
+# 日志
+*.log
+
+# 本地密钥，禁止提交（含 DeepSeek / 通义 API Key）
+.env
+.env.*
+
+# 系统 / 编辑器临时文件
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
