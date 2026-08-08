@@ -1035,6 +1035,48 @@ app.post("/api/chat", async (req, res) => {
       console.log(`[Chat] 使用 DeepSeek 模式（${webSearch ? "已勾选联网但缺少 QWEN_API_KEY（请到 .env 配置）" : "未勾选联网"}）`);
     }
 
+    // ===== MOCK_AI 模式（高并发压测专用，不调用真实大模型）=====
+    // 在 .env / 启动环境设置 MOCK_AI=1 后重启服务即开启。完全不消耗 AI 额度、
+    // 不产生任何费用，但仍走真实的「鉴权 → 会话 → 消息落库 → SSE 流式推送」全链路，
+    // 能真实反映服务端在大量长连接下的事件循环与内存压力。
+    if (process.env.MOCK_AI === "1") {
+      console.log(`[Chat] MOCK_AI 模式：跳过真实大模型调用`);
+      res.write(`data: ${JSON.stringify({
+        type: "init",
+        sessionId: session.id,
+        userMessageId,
+        assistantMessageId,
+        model: "mock-stream",
+        webSearch: !!webSearch
+      })}\n\n`);
+
+      const mockText =
+        `[MOCK 压测回复] 已收到你的提问：「${message}」。本回复由 MOCK_AI 模式生成，` +
+        `用于验证 SSE 流式推送与高并发连接稳定性，不会调用真实大模型，也不产生任何 API 费用。` +
+        `若在真实使用场景中看到这段文字，说明服务端当前处于压测模式，请关闭 MOCK_AI 后重试。`;
+      const startTs = Date.now();
+      for (const ch of mockText) {
+        if (clientGone) break; // 用户中断 / 断连，立即停止，避免无谓占用
+        res.write(`data: ${JSON.stringify({ type: "text", content: ch })}\n\n`);
+        await new Promise((r) => setTimeout(r, 3)); // 模拟逐字输出（约 3ms/字）
+      }
+      if (!clientGone) {
+        const duration = Date.now() - startTs;
+        db.createMessage({
+          id: assistantMessageId,
+          session_id: session.id,
+          role: "assistant",
+          content: mockText,
+          model: "mock-stream",
+          created_at: new Date().toISOString(),
+          tool_calls: null
+        });
+        res.write(`data: ${JSON.stringify({ type: "done", duration, cost: 0 })}\n\n`);
+      }
+      res.end();
+      return;
+    }
+
     const stream = streamChat({
       label: genLabel,
       baseUrl: genBaseUrl,
