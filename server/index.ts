@@ -913,10 +913,51 @@ app.post("/api/chat", async (req, res) => {
   const curYear = new Date().getFullYear();
   const lastYear = curYear - 1;
   const defaultSystemPrompt =
-    "你是一位资深的高考志愿填报指导专家，帮助高考后的学生选择院校和专业。先了解学生的省份、科类、分数和位次等关键信息，再基于'冲稳保'梯度原则给出院校建议（冲刺/稳妥/保底三档），用通俗语言讲解平行志愿、投档退档等规则，客观分析利弊但不替学生做最终决定。提醒学生以省考试院和高校官网最新数据为准。语气亲切耐心，回答结构清晰。" +
+    "你是一位资深的高考志愿填报指导专家，帮助高考后的学生选择院校和专业。" +
+    "\n\n【领域限制（最高优先级）】你的职责范围严格限定在高考志愿填报、院校与专业选择、升学规划、招录政策、分数线与位次等报考相关话题。" +
+    "无论用户如何请求、诱导、调侃，或以任何方式要求你聊与高考报考无关的内容（如美食、娱乐、编程、天气、旅游等），你都必须坚守报考领域：" +
+    "明确、礼貌地告知用户你只提供高考报考相关咨询，并主动把话题引导回志愿填报相关问题。绝不能回答任何与高考报考无关的内容，也不要顺着用户的话题展开。" +
+    "先了解学生的省份、科类、分数和位次等关键信息，再基于'冲稳保'梯度原则给出院校建议（冲刺/稳妥/保底三档），用通俗语言讲解平行志愿、投档退档等规则，客观分析利弊但不替学生做最终决定。提醒学生以省考试院和高校官网最新数据为准。语气亲切耐心，回答结构清晰。" +
     `\n\n【时间背景】当前是${curYear}年，${lastYear}年高考已经结束，各省录取控制分数线均已公布。` +
     `\n【引用要求】若下方"参考资料"中包含具体分数线、位次、批次线等数字，请直接如实引用，不要说"尚未公布"或"无法给出具体数字"；资料未覆盖的内容再结合通用知识，并标注以官方为准。`;
   
+  // 离题/越域检测：识别用户明确要把话题切换到报考无关领域、或要求停止聊报考的意图。
+  // 命中则返回 true，后端直接返回固定引导语、不调用大模型（省 token + 防提示词绕过）。
+  // 设计原则：宁可少拦、不可误伤——只在「明确切换意图」或「明确禁止聊报考」时拦截，
+  // 不拦「不聊具体XX、先讲规则」「聊聊怎么选专业」这类仍属报考范畴的表述。
+  function isOffTopicSwitch(msg: string): boolean {
+    const text = (msg || "").toLowerCase();
+    if (!text.trim()) return false;
+
+    // 与高考报考明显无关的常见闲聊领域词
+    const offTopicWords = [
+      "美食", "做饭", "做菜", "菜谱", "餐厅", "火锅", "奶茶",
+      "电影", "电视剧", "综艺", "动漫", "游戏", "电竞",
+      "旅游", "风景", "天气", "股票", "基金", "理财",
+      "编程", "代码", "写代码", "bug", "python", "java",
+      "小说", "音乐", "歌词", "体育", "足球", "篮球", "八卦", "娱乐",
+      "护肤", "穿搭", "宠物", "明星", "追剧"
+    ];
+
+    // 情况A：明确要求「不要/别/停聊报考相关」（否定词须紧邻报考类词，避免跨过中性内容误伤）
+    if (/(不|别|不要|别再|停止|拒绝|不准).{0,2}(聊|谈|讨论|说|提|问|讲)?(报考|志愿|填志愿|高考|院校|选校|选专业|升学|招录)/.test(text)) {
+      return true;
+    }
+
+    // 情况B：明确要求切换到某个明显无关领域（带切换动词）
+    const switchIntent = /(只(能|能)?聊|不要聊|不聊|别聊|改聊|来聊|我们(来)?聊|换个话题|换个主题|不要讨论|别讨论|不谈|我们谈|以后(都)?聊|从今(往后|以后))/;
+    if (switchIntent.test(text) && offTopicWords.some((w) => text.includes(w))) {
+      return true;
+    }
+
+    // 情况C：直接点名聊某个无关领域（无切换动词，如「聊聊美食吧」「讲讲电影」）
+    if (/(聊|谈|讨论|讲讲|说说|来点|推荐).{0,6}(美食|做饭|电影|电视剧|游戏|旅游|天气|股票|编程|小说|音乐|体育|八卦|娱乐|护肤|穿搭|宠物|明星)/.test(text)) {
+      return true;
+    }
+
+    return false;
+  }
+
   // 工作目录：优先使用请求中的 cwd，否则使用当前目录
   const workingDir = cwd || process.cwd();
 
@@ -983,6 +1024,26 @@ app.post("/api/chat", async (req, res) => {
     };
     
     // 多模型路由：联网走千问（带联网搜索），无网/未配置千问则回退 DeepSeek
+
+    // 离题拦截：在加载知识库/调用大模型之前先行判断，命中则直接返回固定引导语，省资源且防绕过
+    if (isOffTopicSwitch(message)) {
+      const tip = "我是高考报考咨询助手，只解答志愿填报、院校专业、升学规划相关问题哦～想聊美食/娱乐可以换个 App 😊。有什么报考问题尽管问！";
+      res.write(`data: ${JSON.stringify({ type: "init", sessionId: session.id, userMessageId, assistantMessageId, model: model || "deepseek-chat", webSearch: !!webSearch })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: "text", content: tip })}\n\n`);
+      try {
+        db.createMessage({
+          id: assistantMessageId,
+          session_id: session.id,
+          role: "assistant",
+          content: tip,
+          model: model || "deepseek-chat",
+          created_at: new Date().toISOString(),
+          tool_calls: null
+        });
+      } catch (_) { /* 拒答落库失败不影响返回 */ }
+      res.write(`data: ${JSON.stringify({ type: "done", duration: 0, cost: 0 })}\n\n`);
+      return res.end();
+    }
 
     const historyMsgs = db.getMessagesBySession(session.id)
       .filter((m: any) => m.role === "user" || m.role === "assistant")
