@@ -157,7 +157,8 @@ export function LoginPage() {
           <img
             src="/logo.png"
             alt="智愿 AI"
-            className="h-16 mb-3 object-contain"
+            className="w-52 h-auto mb-3 object-contain"
+            style={{ background: 'transparent' }}
           />
           <p className="mt-1 text-sm" style={{ color: 'var(--td-text-color-secondary)' }}>
             {APP_CONFIG.description}
