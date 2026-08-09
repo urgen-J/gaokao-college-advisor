@@ -48,7 +48,7 @@ export function Sidebar({
           <img
             src="/logo.png"
             alt="智愿 AI"
-            className="h-7 w-auto object-contain"
+            className="h-28 w-auto object-contain"
           />
         </div>
         <Button

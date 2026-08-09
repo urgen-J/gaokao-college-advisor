@@ -44,39 +44,40 @@ export function Header({
       }}
     >
       <div className="flex items-center gap-3">
-        <Tooltip content={sidebarOpen ? '收起侧边栏' : '展开侧边栏'}>
-          <Button
-            variant="text"
-            shape="circle"
-            icon={sidebarOpen ? <MenuFoldIcon /> : <MenuUnfoldIcon />}
-            onClick={onToggleSidebar}
+        {!sidebarOpen && (
+          <img
+            src="/logo-icon.png"
+            alt="智愿 AI"
+            className="h-[60px] w-auto object-contain"
           />
-        </Tooltip>
-        <Tooltip content="开启新对话">
-          <Button
-            variant="text"
-            shape="circle"
-            icon={<AddIcon />}
-            onClick={onNewChat}
-            aria-label="开启新对话"
-          />
-        </Tooltip>
-        {!isSettingsPage && currentAgent && (
-          <div 
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: currentAgent.color || 'var(--td-brand-color)' }}
-          >
-            {(() => {
-              const Icon = ICON_MAP[currentAgent.icon || 'Bot'] || Bot;
-              return <Icon size={14} color="white" />;
-            })()}
-          </div>
         )}
-        <h1 
+        <div 
+          className="flex items-center gap-1 p-0.5 rounded-2xl"
+          style={{ border: '1px solid var(--td-component-border)' }}
+        >
+          <Tooltip content={sidebarOpen ? '收起侧边栏' : '展开侧边栏'}>
+            <Button
+              variant="text"
+              shape="circle"
+              icon={sidebarOpen ? <MenuFoldIcon /> : <MenuUnfoldIcon />}
+              onClick={onToggleSidebar}
+            />
+          </Tooltip>
+          <Tooltip content="开启新对话">
+            <Button
+              variant="text"
+              shape="circle"
+              icon={<AddIcon />}
+              onClick={onNewChat}
+              aria-label="开启新对话"
+            />
+          </Tooltip>
+        </div>
+        <h1
           className="text-base font-semibold"
           style={{ color: 'var(--td-text-color-primary)' }}
         >
-          {isSettingsPage ? '设置' : (currentSession?.title || APP_CONFIG.name)}
+          {isSettingsPage ? '设置' : (currentSession?.title || '')}
         </h1>
       </div>
       <div className="flex items-center gap-2">
