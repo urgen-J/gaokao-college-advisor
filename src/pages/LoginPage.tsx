@@ -154,18 +154,11 @@ export function LoginPage() {
       >
         {/* 品牌头部 */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-            style={{
-              background: 'linear-gradient(135deg, var(--td-brand-color), var(--td-brand-color-hover))',
-              boxShadow: '0 8px 20px rgba(59, 130, 246, 0.25)',
-            }}
-          >
-            <span className="text-white text-2xl font-bold">{APP_CONFIG.nameInitial}</span>
-          </div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--td-text-color-primary)' }}>
-            {APP_CONFIG.name}
-          </h1>
+          <img
+            src="/logo.png"
+            alt="智愿 AI"
+            className="h-16 mb-3 object-contain"
+          />
           <p className="mt-1 text-sm" style={{ color: 'var(--td-text-color-secondary)' }}>
             {APP_CONFIG.description}
           </p>

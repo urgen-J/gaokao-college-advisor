@@ -1027,7 +1027,7 @@ app.post("/api/chat", async (req, res) => {
 
     // 离题拦截：在加载知识库/调用大模型之前先行判断，命中则直接返回固定引导语，省资源且防绕过
     if (isOffTopicSwitch(message)) {
-      const tip = "我是高考报考咨询助手，只解答志愿填报、院校专业、升学规划相关问题哦～想聊美食/娱乐可以换个 App 😊。有什么报考问题尽管问！";
+      const tip = "我是智愿 AI，只解答志愿填报、院校专业、升学规划相关问题哦～想聊美食/娱乐可以换个 App 😊。有什么报考问题尽管问！";
       res.write(`data: ${JSON.stringify({ type: "init", sessionId: session.id, userMessageId, assistantMessageId, model: model || "deepseek-chat", webSearch: !!webSearch })}\n\n`);
       res.write(`data: ${JSON.stringify({ type: "text", content: tip })}\n\n`);
       try {

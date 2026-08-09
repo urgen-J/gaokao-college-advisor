@@ -9,7 +9,7 @@ const storageKey = () => scopedKey('customAgents');
 // 默认的 Agent
 const DEFAULT_AGENT: CustomAgent = {
   id: 'default',
-  name: '报考咨询助手',
+  name: '智愿 AI',
   description: '为高考后的学生提供院校选择、专业推荐和志愿填报策略指导',
   systemPrompt: `你是一位资深的高考志愿填报指导专家，专门帮助高考后的学生和家长做出科学的院校选择。
 

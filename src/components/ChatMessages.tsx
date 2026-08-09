@@ -26,7 +26,7 @@ export function ChatMessages({
   const formatModelName = (modelId: string) => {
     // 统一对外显示为报考咨询助手，不暴露底层大模型品牌名
     models.find(m => m.modelId === modelId);
-    return '报考咨询助手';
+    return '智愿 AI';
   };
 
   // 渲染单个内容块

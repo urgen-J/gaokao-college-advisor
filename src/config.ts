@@ -5,11 +5,15 @@
 
 export const APP_CONFIG = {
   /** 应用名称 */
-  name: '报考咨询助手',
+  name: '智愿 AI',
   
-  /** 应用名称首字母（用于 Logo） */
-  nameInitial: '报',
+  /** 应用名称首字母（Logo 兜底，优先使用图片 Logo） */
+  nameInitial: '智',
+
+  /** 图片 Logo 路径（public 目录，根路径引用） */
+  logoUrl: '/logo.png',
   
+
   /** 应用描述 */
   description: '高考出分后，帮你科学选院校、挑专业、填志愿',
   

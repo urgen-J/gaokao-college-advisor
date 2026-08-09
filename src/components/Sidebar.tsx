@@ -44,19 +44,12 @@ export function Sidebar({
     >
       {/* Logo */}
       <div className="h-14 px-4 flex items-center flex-shrink-0 justify-between">
-        <div className="flex items-center gap-2.5">
-          <div 
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: 'var(--td-brand-color)' }}
-          >
-            <span className="text-white text-sm font-bold">{APP_CONFIG.nameInitial}</span>
-          </div>
-          <span 
-            className="text-lg font-semibold"
-            style={{ color: 'var(--td-text-color-primary)' }}
-          >
-            {APP_CONFIG.name}
-          </span>
+        <div className="flex items-center gap-2">
+          <img
+            src="/logo.png"
+            alt="智愿 AI"
+            className="h-7 w-auto object-contain"
+          />
         </div>
         <Button
           variant="text"

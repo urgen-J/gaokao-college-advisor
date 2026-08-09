@@ -13,7 +13,7 @@ function notifyReplyFinished() {
     const { notifyOnReply, notifySound } = getAppSettings();
 
     if (notifyOnReply && typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
-      new Notification('回复已完成', { body: '报考咨询助手已生成回复，点击返回查看' });
+      new Notification('回复已完成', { body: '智愿 AI 已生成回复，点击返回查看' });
     }
 
     if (notifySound) {
